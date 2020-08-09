@@ -5,6 +5,10 @@
   "main": "index.js",
   "author": "Alvin van der Kuech",
   "license": "MIT",
+  "scripts": {
+    "start": "node dotenv/config server.js",
+    "dev": "nodemon -r dotenv/config server.js"
+  },
   "dependencies": {
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
@@ -15,5 +19,8 @@
     "formidable": "^1.2.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.27"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }
