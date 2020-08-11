@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
-const GREMS_DB = process.env.GREMS_DB;
+const NON_PROFIT_DB = process.env.NON_PROFIT_DB;
 
-exports.connectGremsdb = async () => {
+exports.connectdb = async () => {
   try {
-    const db = await mongoose.connect(GREMS_DB, {
+    const db = await mongoose.connect(NON_PROFIT_DB, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
     });
-    console.log('Gremsdb connected...');
+    console.log('Database connected...');
   } catch (error) {
     console.log(error.stack);
   }

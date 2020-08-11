@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SellerSchema = mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -20,6 +20,18 @@ const SellerSchema = mongoose.Schema(
     password: {
       type: String,
     },
+    role: {
+      type: String,
+      default: 'seller',
+      required: true,
+    },
+    orgType: {
+      type: String,
+      default: 'non-profit',
+    },
+    sessionToken: {
+      type: String,
+    },
     dateAdded: {
       type: Date,
       default: Date.now,
@@ -28,4 +40,4 @@ const SellerSchema = mongoose.Schema(
   { timestamp: true },
 );
 
-module.exports = mongoose.model('Sellers', SellerSchema);
+module.exports = mongoose.model('User', UserSchema);

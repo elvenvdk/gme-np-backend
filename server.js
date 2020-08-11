@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
-const { connectGremsdb } = require('./src/db/gremsdb');
-
+const { connectdb } = require('./src/db');
+const authRoute = require('./src/routes/auth');
 require('dotenv').config({ path: './.env' });
 
 const app = express();
@@ -10,12 +11,14 @@ const app = express();
 const PORT = process.env.PORT;
 
 // Connect DB
-connectGremsdb();
+connectdb();
 
 // Middleware
+app.use(bodyParser.json());
 app.use(cors());
 
 // Routing
+app.use('/api/auth/', authRoute);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
