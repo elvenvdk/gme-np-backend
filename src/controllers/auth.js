@@ -49,3 +49,41 @@ exports.register = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+/**
+ * @function login
+ * @description user login
+ */
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  if (email === '' || password === '')
+    return res.status(400).json({ error: 'Email and password are required' });
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ error: 'Invalid email or password' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid)
+      return res.status(400).json({ error: 'Invalid email or password' });
+
+    // res.send(user.id);
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1w' },
+      async (err, token) => {
+        if (err) throw err;
+        await user.update({ $set: { sessionToken: token } });
+        res.send({ msg: 'User successfully logged in' });
+      },
+    );
+  } catch (error) {
+    res.status(400).json({ error: error.stack });
+  }
+};
