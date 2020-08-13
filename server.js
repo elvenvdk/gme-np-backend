@@ -8,6 +8,11 @@ require('dotenv').config({ path: './.env' });
 
 const app = express();
 
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  optionsSuccessStatus: 200,
+};
+
 const PORT = process.env.PORT;
 
 // Connect DB
@@ -15,7 +20,7 @@ connectdb();
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Routing
 app.use('/api/auth/', authRoute);
