@@ -4,22 +4,22 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      required: true,
+      // required: true,
       true: true,
     },
     lastName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     email: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     userName: {
       type: String,
-      required: true,
+      // required: true,
       trim: true,
     },
     password: {
@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       default: 'seller',
-      required: true,
+      // required: true,
     },
     orgType: {
       type: String,
