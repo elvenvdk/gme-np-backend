@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 
 const { connectdb } = require('./src/db');
 const authRoute = require('./src/routes/auth');
+const goalsRoute = require('./src/routes/goals');
 require('dotenv').config({ path: './.env' });
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(cors(corsOptions));
 
 // Routing
 app.use('/api/auth/', authRoute);
+app.use('/api/goals/', goalsRoute);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

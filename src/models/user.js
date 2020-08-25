@@ -1,25 +1,26 @@
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema;
 
 const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-      // required: true,
+
       true: true,
     },
     lastName: {
       type: String,
-      // required: true,
+
       trim: true,
     },
     email: {
       type: String,
-      // required: true,
+
       trim: true,
     },
     userName: {
       type: String,
-      // required: true,
+
       trim: true,
     },
     password: {
@@ -28,14 +29,18 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       default: 'seller',
-      // required: true,
+    },
+    org: {
+      type: ObjectId,
+      ref: 'Org',
     },
     orgType: {
       type: String,
       default: 'non-profit',
     },
-    sessionToken: {
-      type: String,
+    session: {
+      type: ObjectId,
+      ref: 'Session',
     },
     dateAdded: {
       type: Date,
