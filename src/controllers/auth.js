@@ -22,7 +22,6 @@ const validateEmail = (email) => {
 
 exports.register = async (req, res) => {
   const { firstName, lastName, email, password, role } = req.body;
-  console.log(firstName, lastName, email, password, role);
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -58,7 +57,6 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log({ email });
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
   try {
