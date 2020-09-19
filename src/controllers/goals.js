@@ -103,3 +103,11 @@ exports.getGoalPerDay = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+/**
+ * @function getMainGoal
+ * @description Gets organization goalPerDay amount
+ * @param {*} query orgId
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
