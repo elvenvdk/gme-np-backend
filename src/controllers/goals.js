@@ -52,7 +52,7 @@ exports.createDayGoal = async (req, res) => {
       await goal.save();
     }
     res.send({ msg: 'Goal Per Day was successfully created' });
-    const goal = await new Goal({ [goalPerDay.amount]: amount, org });
+    goal = await new Goal({ [goalPerDay.amount]: amount, org });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
