@@ -26,7 +26,7 @@ const GoalSchema = new mongoose.Schema(
       default: undefined,
     },
     goalPerHour: {
-      type: [HourGoal],
+      type: [],
       default: undefined,
     },
     dateAdded: {
