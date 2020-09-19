@@ -16,7 +16,7 @@ exports.createMainGoal = async (req, res) => {
   try {
     let goal = await Goal.findOne({ _id: goalId });
     if (!goal) {
-      goal = await new Goal({ [mainGoal.amount]: amount, org: orgId });
+      goal = await new Goal({ 'mainGoal.amount': amount, org: orgId });
       await goal.save();
     } else {
       goal.mainGoal.amount = amount;
@@ -43,16 +43,18 @@ exports.createDayGoal = async (req, res) => {
 
   try {
     let goal = await Goal.findOne({ _id: goalId });
+    const d = new Date(Date.now());
     if (!goal) {
-      goal = await new Goal({ [goalPerDay.amount]: amount, org: orgId });
+      goal = await new Goal({ 'goalPerDay.amount': amount, org: orgId });
       await goal.save();
     } else {
-      goal.goalPerDay.amount = amount;
+      goal.goalPerDay.push({ dayAmount: amount, amountDate: d });
       goal.org = orgId;
       await goal.save();
     }
     res.send({ msg: 'Goal Per Day was successfully created' });
-    goal = await new Goal({ [goalPerDay.amount]: amount, org });
+
+    goal = await new Goal({ [goalPerDay.amount]: amount, org, amountDate: d });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
