@@ -8,6 +8,6 @@ const router = express.Router();
  * @description route for creating goals
  */
 
-router.post('/create');
+router.post('/create/main-goal');
 
 module.exports = router;
