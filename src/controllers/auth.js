@@ -21,7 +21,7 @@ const validateEmail = (email) => {
  */
 
 exports.register = async (req, res) => {
-  const { email, password, firstName, lastName, role } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -47,5 +47,57 @@ exports.register = async (req, res) => {
     res.send({ msg: 'User successfully registered' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+/**
+ * @function login
+ * @description user login
+ */
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  if (email === '' || password === '')
+    return res.status(400).json({ error: 'Email and password are required' });
+  try {
+    const user = await User.findOne({ email });
+    console.log({ user });
+    if (!user) return res.status(400).json({ error: 'User not found' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid)
+      return res.status(400).json({ error: 'Invalid email or password' });
+
+    // res.send(user.id);
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+
+    // Get user role
+    if (user.role === 'admin') {
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' },
+        async (err, token) => {
+          if (err) throw err;
+          await user.update({ $set: { sessionToken: token } });
+          return res.send({ msg: 'Admin user successfully logged in', token });
+        },
+      );
+    }
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1w' },
+      async (err, token) => {
+        if (err) throw err;
+        await user.update({ $set: { sessionToken: token } });
+        res.send({ msg: 'Sales person successfully logged in' });
+      },
+    );
+  } catch (error) {
+    res.status(400).json({ error: error.stack });
   }
 };

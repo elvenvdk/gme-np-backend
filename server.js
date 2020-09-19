@@ -4,9 +4,16 @@ const bodyParser = require('body-parser');
 
 const { connectdb } = require('./src/db');
 const authRoute = require('./src/routes/auth');
+const goalsRoute = require('./src/routes/goals');
+const orgRoute = require('./src/routes/org');
 require('dotenv').config({ path: './.env' });
 
 const app = express();
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  optionsSuccessStatus: 200,
+};
 
 const PORT = process.env.PORT;
 
@@ -15,10 +22,12 @@ connectdb();
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Routing
-app.use('/api/auth/', authRoute);
+app.use('/api/auth', authRoute);
+app.use('/api/goals', goalsRoute);
+app.use('/api/org', orgRoute);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
