@@ -29,6 +29,9 @@ const OrgSchema = new mongoose.Schema(
       data: Buffer,
       contentType: String,
     },
+    active: {
+      type: Boolean,
+    },
     dateAdded: {
       type: Date,
       default: Date.now,
