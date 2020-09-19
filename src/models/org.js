@@ -25,6 +25,10 @@ const OrgSchema = new mongoose.Schema(
     zipCode: {
       type: Number,
     },
+    photo: {
+      data: Buffer,
+      contentType: String,
+    },
     dateAdded: {
       type: Date,
       default: Date.now,
