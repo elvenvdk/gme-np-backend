@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const Session = require('../models/session');
+const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 const { sendMail } = require('../controllers/emailSvc');
 const db = require('../db');
 
@@ -18,7 +19,9 @@ const validateEmail = (email) => {
 
 /**
  * @function register
- * @description register new user
+ * @description Registers new user.  Sends user email apon successful registration
+ * @param {*} req firstName, lastName, email, password, role, org
+ * @param {*} res confirmation msg
  */
 
 exports.register = async (req, res) => {
@@ -37,8 +40,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: 'User already registered' });
 
     // Hash and salt user password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await hashPassword(password);
 
     // Add new user
     user = new User({
@@ -64,16 +66,17 @@ exports.register = async (req, res) => {
       id: user._id,
       role,
       org,
-      tokenType: 'registration_verification',
+      tokenType: tokenTypes.REGISTRATION_VERIFICATION,
     };
 
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
       { expiresIn: '1h' },
-      (err, token) => {
+      async (err, token) => {
         if (err) return res.status(400).json({ error: err.message });
         userSession.token = token;
+        await userSession.save();
 
         const link = `${process.env.FRONTEND_URL}/registration-email-verification?token=${token}`;
 
@@ -106,7 +109,10 @@ exports.register = async (req, res) => {
 
 /**
  * @function login
- * @description user login
+ * @description Gets organization goalPerDay amount
+ * @param {*} query orgId
+ * @param {*} req
+ * @param {*} res confirmation msg
  */
 
 exports.login = async (req, res) => {
@@ -128,7 +134,7 @@ exports.login = async (req, res) => {
     };
 
     // Get user role
-    if (user.role === 'admin') {
+    if (user.role === userRoles.ADMIN) {
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -153,5 +159,80 @@ exports.login = async (req, res) => {
     );
   } catch (error) {
     res.status(400).json({ error: error.stack });
+  }
+};
+
+/**
+ * @function emailVerificationCheck
+ * @description Gets token from email verification to check if user has verified email
+ * @param {*} query token
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
+
+exports.emailVerificationCheck = async (req, res) => {
+  const { token } = req.query;
+  try {
+    const userSession = Session.find({ token });
+    if (!userSession)
+      return res
+        .status(401)
+        .json({ error: 'There was a problem verifying this email.' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded)
+      return res
+        .status(401)
+        .json({ error: 'Your verification session has expired.' });
+
+    const payload = {
+      id: decoded.id,
+      role: decoded.role,
+      org: decoded.org,
+      tokenType: tokenTypes.SESSION,
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '2h' },
+      (err, token) => {
+        if (err) return res.status(400).json({ error: err.message });
+        userSession.token = token;
+        res.send({
+          msg: 'Your email has been successfully verified.',
+          token,
+          id: decoded.id,
+          role: decoded.role,
+          org: decoded.org,
+        });
+      },
+    );
+  } catch (error) {
+    res
+      .status(401)
+      .json({ error: 'There was a problem verifying this email.' });
+  }
+};
+
+exports.tokenVerify = (req, res, next) => {
+  // Get token from header
+  const token = req.header('x-auth-token');
+
+  // Check if token exists
+  if (!token)
+    return res.status(401).json({ error: 'No token, authorization denied' });
+
+  // Verify token
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+    next();
+  } catch (err) {
+    res
+      .status(401)
+      .json({ error: 'Token is not valid', error_msg: err.message });
   }
 };
