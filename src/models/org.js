@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema;
 
 const OrgSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       trim: true,
+    },
+    owner: {
+      type: ObjectId,
+      ref: 'User',
     },
     addressLine1: {
       type: String,

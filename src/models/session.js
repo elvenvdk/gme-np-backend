@@ -6,6 +6,11 @@ const SessionSchema = new mongoose.Schema(
     user: {
       type: ObjectId,
       ref: 'User',
+      unique: true,
+    },
+    password: {
+      type: String,
+      trim: true,
     },
     token: {
       type: String,

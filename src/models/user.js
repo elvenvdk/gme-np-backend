@@ -23,9 +23,6 @@ const UserSchema = new mongoose.Schema(
 
       trim: true,
     },
-    password: {
-      type: String,
-    },
     role: {
       type: String,
       default: 'seller',
