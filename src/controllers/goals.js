@@ -112,8 +112,9 @@ exports.getMainGoal = async (req, res) => {
 
 exports.getGoalPerDay = async (req, res) => {
   const { orgId } = req.query;
+  const { type } = req.body;
   try {
-    const goal = await Goal.findOne({ _id: orgId });
+    const goal = await Goal.findOne({ _id: orgId, type: type && 'Non-Profit' });
     if (!goal)
       return res
         .status(400)
@@ -128,14 +129,15 @@ exports.getGoalPerDay = async (req, res) => {
  * @function getMainGoalDiff
  * @description Gets the difference between Main Goal and actual Sales
  * @param {*} query orgId
- * @param {*} req
+ * @param {*} req type?
  * @param {*} res confirmation msg
  */
 
 exports.getMainGoalDiff = async (req, res) => {
   const { orgId } = req.query;
+  const { type } = req.body;
   try {
-    const sales = await axios.get(`${SALES_URL}/sales/sales-per-day`);
+    const sales = await axios.get(`${SALES_URL}/sales/sales-per-day`, type);
     console.log({ sales: sales.data });
     res.send(sales.data);
   } catch (error) {
