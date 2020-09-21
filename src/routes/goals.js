@@ -5,6 +5,7 @@ const {
   createDayGoal,
   getMainGoal,
   getGoalPerDay,
+  getMainGoalDiff,
 } = require('../controllers/goals');
 
 const router = express.Router();
@@ -40,5 +41,15 @@ router.get('/main', getMainGoal);
  */
 
 router.get('/day', getGoalPerDay);
+
+router.get('/main', getMainGoal);
+
+/**
+ * @route get api/goals/main-goal-diff
+ * @access private
+ * @description route getting difference of main goal and sales (day)
+ */
+
+router.get('/main-goal-diff', getMainGoalDiff);
 
 module.exports = router;
