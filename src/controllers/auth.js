@@ -35,9 +35,8 @@ exports.register = async (req, res) => {
       .json({ error: 'Please enter a valid email address...' });
   try {
     // Check if user exists
-    let user = await User.find({ email });
-    if (user.length)
-      return res.status(400).json({ error: 'User already registered' });
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ error: 'User already registered' });
 
     // Hash and salt user password
     const hashedPassword = await hashPassword(password);
@@ -173,7 +172,7 @@ exports.login = async (req, res) => {
 exports.emailVerificationCheck = async (req, res) => {
   const { token } = req.query;
   try {
-    const userSession = Session.find({ token });
+    const userSession = Session.findOne({ token });
     if (!userSession)
       return res
         .status(401)
@@ -227,13 +226,15 @@ exports.emailVerificationCheck = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
-    const user = await User.find({ email });
+    const user = await User.findOne({ email });
+
     if (!user)
       return res
         .status(400)
         .json({ error: 'There was a problem finding your account' });
 
-    const userSession = Session.find({ user: user._id });
+    const userSession = await Session.findOne({ user: user._id });
+
     if (!userSession)
       return res
         .status(400)
@@ -254,9 +255,10 @@ exports.forgotPassword = async (req, res) => {
         if (err) return res.status(400).json({ error: err.message });
 
         userSession.token = token;
+        console.log({ USER_SESSION: userSession.token });
         await userSession.save();
 
-        const link = `${process.env.FRONTEND_URL}/registration-email-verification?token=${token}`;
+        const link = `${process.env.FRONTEND_URL}/forgot-password-verification?token=${token}`;
 
         // Send user confirmation/verification email with token link
         sendMail({
@@ -264,7 +266,7 @@ exports.forgotPassword = async (req, res) => {
           to: email,
           subject: "No-Reply - Grandma Emma's - Forgot Password Verification",
           text: "Grandma Emma's verify that you forgot your password",
-          html: `<p>Hi ${firstName}</p>
+          html: `<p>Hi ${user.firstName}</p>
              <p>This is an email verifying that you forgot your password.</p>
              <p>Please click the link below to verify your email.</p>
              <br></br>
@@ -272,6 +274,11 @@ exports.forgotPassword = async (req, res) => {
              <br></br>
              <p>Thank you,</p>
              <p>Grandma Emmas Team`,
+        });
+
+        res.send({
+          msg:
+            'We have a sent a change-password verification email.  Please check your email and follow the link provided.',
         });
       },
     );
