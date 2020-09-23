@@ -5,7 +5,6 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-
       true: true,
     },
     lastName: {
@@ -20,7 +19,6 @@ const UserSchema = new mongoose.Schema(
     },
     userName: {
       type: String,
-
       trim: true,
     },
     role: {

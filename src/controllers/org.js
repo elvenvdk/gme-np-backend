@@ -6,6 +6,7 @@ const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 
 const Org = require('../models/org');
 const OrgSession = require('../models/orgSession');
+const user = require('../models/user');
 
 /**
  * @function addOrg
@@ -21,12 +22,14 @@ exports.addOrg = async (req, res) => {
     form.parse(req, async (err, fields, files) => {
       if (err) return res.status(404);
 
+      // Check if org exists
       let org = await Org.findOne({ name: fields.name });
       if (org)
         return res
           .status(404)
           .json({ error: 'This organization name already exists' });
 
+      // Add fields and photo?
       org = await new Org(fields);
       if (files.photo) {
         org.photo.data = fs.readFileSync(files.photo.path);
@@ -35,11 +38,13 @@ exports.addOrg = async (req, res) => {
 
       await org.save();
 
+      // Create org session token payload
       const payload = {
         id: org._id,
         name: org.name,
       };
 
+      // Create org session token
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -49,10 +54,20 @@ exports.addOrg = async (req, res) => {
         async (err, token) => {
           if (err) return res.status(400).json({ error: err.message });
 
+          // Put session token, orgID and ownderID in org sessions
+          const orgSession = await new OrgSession({
+            org: org._id,
+            owner: user._id,
+            token,
+          });
+
+          await orgSession.save();
+
           res.send({
             msg: `${org.name} was successfully saved`,
             token,
             orgId: org._id,
+            orgToken: orgSession.token,
           });
         },
       );

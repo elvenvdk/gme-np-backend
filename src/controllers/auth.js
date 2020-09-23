@@ -38,6 +38,12 @@ exports.register = async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ error: 'User already registered' });
 
+    // Check if user isn't the org owner
+    if (org && role === userRoles.OWNER)
+      return res
+        .status('400')
+        .json({ error: 'An organization ownder already exists' });
+
     // Hash and salt user password
     const hashedPassword = await hashPassword(password);
 
