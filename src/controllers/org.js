@@ -1,7 +1,11 @@
 const formidable = require('formidable');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+
+const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 
 const Org = require('../models/org');
+const OrgSession = require('../models/orgSession');
 
 /**
  * @function addOrg
@@ -31,7 +35,27 @@ exports.addOrg = async (req, res) => {
 
       await org.save();
 
-      res.send({ msg: `${org.name} was successfully saved` });
+      const payload = {
+        id: org._id,
+        name: org.name,
+      };
+
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '2w',
+        },
+        async (err, token) => {
+          if (err) return res.status(400).json({ error: err.message });
+
+          res.send({
+            msg: `${org.name} was successfully saved`,
+            token,
+            orgId: org._id,
+          });
+        },
+      );
     });
   } catch (error) {
     res
