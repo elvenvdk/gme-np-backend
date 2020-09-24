@@ -83,7 +83,7 @@ exports.register = async (req, res) => {
         userSession.token = token;
         await userSession.save();
 
-        const link = `${process.env.FRONTEND_URL}/registration-email-verification?token=${token}`;
+        const link = `${process.env.FRONTEND_URL}/registration-email-verification/${token}`;
 
         // Send user confirmation/verification email with token link
         sendMail({
@@ -177,8 +177,10 @@ exports.login = async (req, res) => {
 
 exports.emailVerificationCheck = async (req, res) => {
   const { token } = req.query;
+
   try {
-    const userSession = Session.findOne({ token });
+    const userSession = await Session.findOne({ token });
+
     if (!userSession)
       return res
         .status(401)
@@ -198,23 +200,37 @@ exports.emailVerificationCheck = async (req, res) => {
       tokenType: tokenTypes.SESSION,
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '2h' },
-      async (err, token) => {
-        if (err) return res.status(400).json({ error: err.message });
-        userSession.token = token;
-        await userSession.save();
-        res.send({
-          msg: 'Your email has been successfully verified.',
-          token,
-          id: decoded.id,
-          role: decoded.role,
-          org: decoded.org,
-        });
-      },
-    );
+    // jwt.sign(
+    //   payload,
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: '2h' },
+    //   async (err, token) => {
+    //     if (err) return res.status(400).json({ error: err.message });
+    //     userSession.token = token;
+    //     await userSession.save();
+    //     res.send({
+    //       msg: 'Your email has been successfully verified.',
+    //       token,
+    //       id: decoded.id,
+    //       role: decoded.role,
+    //       org: decoded.org,
+    //     });
+    //   },
+    // );
+
+    const newToken = await jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    userSession.token = newToken;
+    await userSession.save();
+    res.send({
+      msg: 'Your email has been successfully verified.',
+      token,
+      id: decoded.id,
+      role: decoded.role,
+      org: decoded.org,
+    });
   } catch (error) {
     res
       .status(401)
