@@ -153,3 +153,26 @@ exports.getOrgs = async (req, res) => {
     res.status(400).json({ error: "There's a problem getting organizations" });
   }
 };
+
+/**
+ * @function getOrg
+ * @description Get's single organization from db
+ * @param {*} req orgId
+ * @param {*} res Organization
+ */
+
+exports.getOrg = async (req, res) => {
+  const { orgId } = req.query;
+  try {
+    const org = await Org.findOne({ _id: orgId });
+    if (!org)
+      return res
+        .status(400)
+        .json({ error: 'There was a problem finding this organization' });
+    res.send(org);
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ error: 'There was a problem getting this organization' });
+  }
+};
