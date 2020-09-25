@@ -20,6 +20,7 @@ exports.addOrg = async (req, res) => {
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.parse(req, async (err, fields, files) => {
+      console.log({ fields });
       if (err) return res.status(404);
 
       // Check if org exists
