@@ -6,6 +6,7 @@ const OrgSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
+      unique: true,
     },
     owner: {
       type: ObjectId,

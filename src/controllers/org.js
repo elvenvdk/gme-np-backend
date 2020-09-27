@@ -6,7 +6,7 @@ const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 
 const Org = require('../models/org');
 const OrgSession = require('../models/orgSession');
-const user = require('../models/user');
+const User = require('../models/user');
 
 /**
  * @function addOrg
@@ -16,11 +16,11 @@ const user = require('../models/user');
  */
 
 exports.addOrg = async (req, res) => {
+  const { userId } = req.query;
   try {
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.parse(req, async (err, fields, files) => {
-      console.log({ fields });
       if (err) return res.status(404);
 
       // Check if org exists
@@ -30,6 +30,13 @@ exports.addOrg = async (req, res) => {
           .status(404)
           .json({ error: 'This organization name already exists' });
 
+      let user = await User.findOne({ _id: userId });
+      console.log({ user });
+      if (!user || user === undefined)
+        return res
+          .status(400)
+          .json({ error: 'There is an error with this user.' });
+
       // Add fields and photo?
       org = await new Org(fields);
       if (files.photo) {
@@ -37,7 +44,10 @@ exports.addOrg = async (req, res) => {
         org.photo.contentType = files.photo.type;
       }
 
+      org.owner = userId;
       await org.save();
+      user.org = org._id;
+      await user.save();
 
       // Create org session token payload
       const payload = {
