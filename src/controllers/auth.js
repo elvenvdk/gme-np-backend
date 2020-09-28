@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const Session = require('../models/session');
+const Org = require('../models/org');
 const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 const { sendMail } = require('../controllers/emailSvc');
 const db = require('../db');
@@ -25,7 +26,7 @@ const validateEmail = (email) => {
  */
 
 exports.register = async (req, res) => {
-  const { firstName, lastName, email, password, role, org } = req.body;
+  const { firstName, lastName, email, password, role, org, orgName } = req.body;
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -43,6 +44,81 @@ exports.register = async (req, res) => {
       return res
         .status('400')
         .json({ error: 'An organization ownder already exists' });
+
+    // If not owner search for org name and register with that orgid -------------------------------
+    if (role !== userRoles.OWNER) {
+      let userOrg = await Org.findOne({ name: orgName });
+      if (!userOrg)
+        return res
+          .status(400)
+          .json({ error: 'This organization does not exist' });
+
+      // Hash and salt user password
+      const hashedPassword = await hashPassword(password);
+
+      // Add new user
+      user = new User({
+        firstName,
+        lastName,
+        email,
+        role,
+        org: userOrg._id,
+      });
+
+      await user.save();
+
+      // Add user password to user session
+      const userSession = await new Session({
+        user: user._id,
+        password: hashedPassword,
+      });
+
+      await userSession.save();
+
+      // Create email verification token
+      const payload = {
+        id: user._id,
+        role,
+        org,
+        tokenType: tokenTypes.REGISTRATION_VERIFICATION,
+      };
+
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' },
+        async (err, token) => {
+          if (err) return res.status(400).json({ error: err.message });
+          userSession.token = token;
+          await userSession.save();
+
+          const link = `${process.env.FRONTEND_URL}/registration-email-verification/${token}`;
+
+          // Send user confirmation/verification email with token link
+          sendMail({
+            from: 'contact@grandmaemmas.com',
+            to: email,
+            subject: "No-Reply - Grandma Emma's Fund-Raising Registration",
+            text: "Grandma Emma's Fund-Raising Program Registration",
+            html: `<p>Hi ${firstName}</p>
+             <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
+             <p>Please click the link below to verify your email.</p>
+             <br></br>
+             <p>${link}
+             <br></br>
+             <p>Thank you and Welcome,</p>
+             <p>Grandma Emmas Team`,
+          });
+        },
+      );
+
+      res.send({
+        msg:
+          "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
+      });
+    }
+
+    // If user is owner ------------------------------
 
     // Hash and salt user password
     const hashedPassword = await hashPassword(password);
@@ -128,14 +204,25 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) return res.status(400).json({ error: 'User not found' });
-    const valid = await bcrypt.compare(password, user.password);
+
+    const session = await Session.findOne({ _id: user._id });
+    const valid = await bcrypt.compare(password, session.password);
     if (!valid)
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
+
+    const org = await Org.findOne({ _id: user.org });
+    if (!org)
+      return res.status(400).json({
+        error:
+          'You are not associated with any organization yet.  Please see the an admin personnel or the organization owner.',
+      });
 
     // res.send(user.id);
     const payload = {
       id: user.id,
       role: user.role,
+      orgName: org.name,
+      orgId: org._id,
     };
 
     // Get user role
@@ -146,7 +233,8 @@ exports.login = async (req, res) => {
         { expiresIn: '1h' },
         async (err, token) => {
           if (err) throw err;
-          await user.update({ $set: { sessionToken: token } });
+          session.token = token;
+          await session.save();
           return res.send({ msg: 'Admin user successfully logged in', token });
         },
       );
@@ -158,7 +246,8 @@ exports.login = async (req, res) => {
       { expiresIn: '1w' },
       async (err, token) => {
         if (err) throw err;
-        await user.update({ $set: { sessionToken: token } });
+        session.token = token;
+        await session.save();
         res.send({ msg: 'Sales person successfully logged in' });
       },
     );
