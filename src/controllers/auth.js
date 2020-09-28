@@ -202,10 +202,13 @@ exports.login = async (req, res) => {
     return res.status(400).json({ error: 'Email and password are required' });
   try {
     const user = await User.findOne({ email });
+    console.log({ user });
 
     if (!user) return res.status(400).json({ error: 'User not found' });
 
-    const session = await Session.findOne({ _id: user._id });
+    const session = await Session.findOne({ user: user._id });
+    console.log({ session });
+    if (!session) res.status(401).json({ error: 'Password not valid' });
     const valid = await bcrypt.compare(password, session.password);
     if (!valid)
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -226,7 +229,7 @@ exports.login = async (req, res) => {
     };
 
     // Get user role
-    if (user.role === userRoles.ADMIN) {
+    if (user.role !== userRoles.SELLER) {
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
@@ -235,7 +238,14 @@ exports.login = async (req, res) => {
           if (err) throw err;
           session.token = token;
           await session.save();
-          return res.send({ msg: 'Admin user successfully logged in', token });
+          return res.send({
+            msg: 'Admin user successfully logged in',
+            token,
+            id: user.id,
+            role: user.role,
+            orgName: org.name,
+            orgId: org.id,
+          });
         },
       );
     }
