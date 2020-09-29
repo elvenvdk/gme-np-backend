@@ -42,8 +42,6 @@ router.get('/main', getMainGoal);
 
 router.get('/day', getGoalPerDay);
 
-router.get('/main', getMainGoal);
-
 /**
  * @route get api/goals/main-goal-diff
  * @access private

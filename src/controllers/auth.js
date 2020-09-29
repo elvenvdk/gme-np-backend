@@ -92,7 +92,7 @@ exports.register = async (req, res) => {
           userSession.token = token;
           await userSession.save();
 
-          const link = `${process.env.FRONTEND_URL}/registration-email-verification/${token}`;
+          const link = `${process.env.FRONTEND_URL}/auth/registration-email-verification/${token}`;
 
           // Send user confirmation/verification email with token link
           sendMail({
@@ -104,7 +104,7 @@ exports.register = async (req, res) => {
              <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
              <p>Please click the link below to verify your email.</p>
              <br></br>
-             <p>${link}
+             <p>${link}</p>
              <br></br>
              <p>Thank you and Welcome,</p>
              <p>Grandma Emmas Team`,
@@ -159,7 +159,7 @@ exports.register = async (req, res) => {
         userSession.token = token;
         await userSession.save();
 
-        const link = `${process.env.FRONTEND_URL}/registration-email-verification/${token}`;
+        const link = `${process.env.FRONTEND_URL}/auth/registration-email-verification/${token}`;
 
         // Send user confirmation/verification email with token link
         sendMail({

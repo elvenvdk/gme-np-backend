@@ -12,8 +12,8 @@ const SALES_URL = process.env.GE_S_API;
  */
 
 exports.createMainGoal = async (req, res) => {
-  const { goalId } = req.query;
-  const { amount, orgId } = req.body;
+  const { goalId, orgId } = req.query;
+  const { amount } = req.body;
 
   try {
     const d = moment().format();
@@ -46,8 +46,8 @@ exports.createMainGoal = async (req, res) => {
  */
 
 exports.createDayGoal = async (req, res) => {
-  const { goalId } = req.query;
-  const { amount, orgId, success } = req.body;
+  const { goalId, orgId } = req.query;
+  const { amount } = req.body;
 
   try {
     let goal = await Goal.findOne({ _id: goalId });
@@ -58,7 +58,6 @@ exports.createDayGoal = async (req, res) => {
           {
             amount,
             dateAdded: d,
-            success: !success && false,
           },
         ],
         org: orgId,
@@ -69,7 +68,6 @@ exports.createDayGoal = async (req, res) => {
       goal.goalPerDay.unshift({
         amount,
         dateAdded: d,
-        success: !success && false,
       });
       goal.org = orgId;
       await goal.save();
