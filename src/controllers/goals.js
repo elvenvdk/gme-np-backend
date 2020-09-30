@@ -12,25 +12,20 @@ const SALES_URL = process.env.GE_S_API;
  */
 
 exports.createMainGoal = async (req, res) => {
-  const { goalId, orgId } = req.query;
+  const { orgId } = req.query;
   const { amount } = req.body;
+  console.log({ orgId }, amount);
 
   try {
     const d = moment().format();
-    let goal = await Goal.findOne({ _id: goalId });
-    if (!goal) {
-      goal = await new Goal({
-        'mainGoal.amount': amount,
-        'mainGoal.dateAdded': d,
-        org: orgId,
-      });
-      await goal.save();
-    } else {
-      goal.mainGoal.amount = amount;
-      goal.mainGoal.dateAdded = d;
-      goal.org = orgId;
-      await goal.save();
-    }
+
+    goal = await new Goal({
+      'mainGoal.amount': amount,
+      'mainGoal.dateAdded': d,
+      org: orgId,
+    });
+    await goal.save();
+
     res.send({ msg: 'Main goal was successfully created' });
   } catch (error) {
     res.status(400).json({ error: error.message });
