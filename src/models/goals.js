@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
-const moment = require('moment');
 
 const GoalSchema = new mongoose.Schema(
   {
@@ -15,6 +14,9 @@ const GoalSchema = new mongoose.Schema(
       dateAdded: {
         type: Date,
       },
+      dateUpdated: {
+        type: Date,
+      },
       actual: {
         type: Number,
       },
@@ -25,14 +27,6 @@ const GoalSchema = new mongoose.Schema(
       difference: {
         type: Number,
       },
-    },
-    goalPerDay: {
-      type: Array,
-      default: [],
-    },
-    goalPerHour: {
-      type: Array,
-      default: [],
     },
   },
   { timestamp: true },

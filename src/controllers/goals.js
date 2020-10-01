@@ -5,28 +5,60 @@ const Goal = require('../models/goals');
 const SALES_URL = process.env.GE_S_API;
 /**
  * @function createMainGoal
- * @description Creates/updates organization mainGoal amount in database
+ * @description Creates organization mainGoal amount in database
  * @param {*} query orgId
  * @param {*} req amount, ordId
  * @param {*} res confirmation msg
  */
 
 exports.createMainGoal = async (req, res) => {
-  const { orgId } = req.query;
   const { amount } = req.body;
   console.log({ orgId }, amount);
 
   try {
     const d = moment().format();
 
-    goal = await new Goal({
+    let goal = await new Goal({
       'mainGoal.amount': amount,
       'mainGoal.dateAdded': d,
       org: orgId,
     });
     await goal.save();
 
-    res.send({ msg: 'Main goal was successfully created' });
+    res.send({ msg: 'Main goal was successfully created', goalId: goal._id });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+/**
+ * @function updateMainGoal
+ * @description Updates organization mainGoal amount in database
+ * @param {*} query orgId
+ * @param {*} req amount, ordId
+ * @param {*} res confirmation msg
+ */
+
+exports.updateMainGoal = async (req, res) => {
+  const { orgId, goalId } = req.query;
+  const { amount } = req.body;
+  console.log({ orgId }, amount);
+
+  try {
+    const d = moment().format();
+
+    let goal = await Goal.findOne({ _id: goalId });
+    if (!goal)
+      return res
+        .status(400)
+        .json({ error: "There was problem finding this organization's goal" });
+
+    goal.mainGoal.amount = amount;
+    goal.dateUpdated = d;
+
+    await goal.save();
+
+    res.send({ msg: 'Main goal was successfully updated' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -40,39 +72,6 @@ exports.createMainGoal = async (req, res) => {
  * @param {*} res confirmation msg
  */
 
-exports.createDayGoal = async (req, res) => {
-  const { goalId, orgId } = req.query;
-  const { amount } = req.body;
-
-  try {
-    let goal = await Goal.findOne({ _id: goalId });
-    const d = moment().format();
-    if (!goal) {
-      goal = await new Goal({
-        goalPerDay: [
-          {
-            amount,
-            dateAdded: d,
-          },
-        ],
-        org: orgId,
-      });
-      await goal.save();
-    } else {
-      // if (!goal.goalPerDay.length) goal.goalPerDay =
-      goal.goalPerDay.unshift({
-        amount,
-        dateAdded: d,
-      });
-      goal.org = orgId;
-      await goal.save();
-    }
-    res.send({ msg: 'Goal Per Day was successfully created' });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
 /**
  * @function getMainGoal
  * @description Gets organization mainGoal amount
@@ -84,12 +83,12 @@ exports.createDayGoal = async (req, res) => {
 exports.getMainGoal = async (req, res) => {
   const { orgId } = req.query;
   try {
-    const goal = await Goal.findOne({ _id: orgId });
+    const goal = await Goal.findOne({ org: orgId });
     if (!goal)
       return res
         .status(400)
         .json({ error: 'There was an error getting your Main Goal' });
-    res.send(goal.mainGoal.amount);
+    res.send(goal.mainGoal);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

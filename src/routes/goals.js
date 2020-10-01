@@ -6,6 +6,7 @@ const {
   getMainGoal,
   getGoalPerDay,
   getMainGoalDiff,
+  updateMainGoal,
 } = require('../controllers/goals');
 
 const router = express.Router();
@@ -19,12 +20,18 @@ const router = express.Router();
 router.post('/create/main-goal', createMainGoal);
 
 /**
+ * @route put api/goals/update/main-goal
+ * @access private
+ * @description route for creating main goal
+ */
+
+router.put('/update/main-goal', updateMainGoal);
+
+/**
  * @route post api/goals/create/day-goal
  * @access private
  * @description route for creating goal per day
  */
-
-router.post('/create/day-goal', createDayGoal);
 
 /**
  * @route get api/goals/main

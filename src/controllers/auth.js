@@ -26,7 +26,16 @@ const validateEmail = (email) => {
  */
 
 exports.register = async (req, res) => {
-  const { firstName, lastName, email, password, role, org, orgName } = req.body;
+  const {
+    firstName,
+    lastName,
+    userName,
+    email,
+    password,
+    role,
+    org,
+    orgName,
+  } = req.body;
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -60,6 +69,7 @@ exports.register = async (req, res) => {
       user = new User({
         firstName,
         lastName,
+        userName,
         email,
         role,
         org: userOrg._id,
@@ -93,6 +103,7 @@ exports.register = async (req, res) => {
           await userSession.save();
 
           const link = `${process.env.FRONTEND_URL}/auth/registration-email-verification/${token}`;
+          const sellerLink = `${process.env.GE_NP_S_FRONTEND}/auth/registration-email-verification/${token}`;
 
           // Send user confirmation/verification email with token link
           sendMail({
