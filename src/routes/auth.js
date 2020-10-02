@@ -6,6 +6,7 @@ const {
   forgotPassword,
   forgotPasswordVerification,
   registerOwner,
+  sellerInstanceVerificationCheck,
 } = require('../controllers/auth');
 
 const router = express.Router();
@@ -41,6 +42,17 @@ router.post('/login', login);
  */
 
 router.post('/email-verification', emailVerificationCheck);
+
+/**
+ * @route api/auth/seller-instance-verification
+ * @description Route for verififying user email upon after registration
+ * @access private
+ */
+
+router.post(
+  '/seller-instance-verification/:userName',
+  sellerInstanceVerificationCheck,
+);
 
 /**
  * @route api/auth/forgot-password

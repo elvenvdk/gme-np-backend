@@ -36,16 +36,6 @@ exports.register = async (req, res) => {
     org,
     orgName,
   } = req.body;
-  console.log({
-    firstName,
-    lastName,
-    userName,
-    email,
-    password,
-    role,
-    org,
-    orgName,
-  });
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -104,7 +94,7 @@ exports.register = async (req, res) => {
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: role === 'seller' ? '1w' : '1h' },
       async (err, token) => {
         if (err) return res.status(400).json({ error: err.message });
         userSession.token = token;
@@ -157,15 +147,6 @@ exports.registerOwner = async (req, res) => {
     role,
     orgName,
   } = req.body;
-  console.log({
-    firstName,
-    lastName,
-    userName,
-    email,
-    password,
-    role,
-    orgName,
-  });
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -258,12 +239,11 @@ exports.login = async (req, res) => {
     return res.status(400).json({ error: 'Email and password are required' });
   try {
     const user = await User.findOne({ email });
-    console.log({ user });
 
     if (!user) return res.status(400).json({ error: 'User not found' });
 
     const session = await Session.findOne({ user: user._id });
-    console.log({ session });
+
     if (!session) res.status(401).json({ error: 'Password not valid' });
     const valid = await bcrypt.compare(password, session.password);
     if (!valid)
@@ -354,7 +334,6 @@ exports.emailVerificationCheck = async (req, res) => {
       org: decoded.org,
       tokenType: tokenTypes.SESSION,
     };
-    console.log(payload);
 
     const newToken = await jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1h',
@@ -407,9 +386,10 @@ exports.sellerInstanceVerificationCheck = async (req, res) => {
       orgName: org.name,
       id: user._id,
       role: user.role,
+      token: session.token,
     });
   } catch (error) {
-    res.status(401).json({ error: 'This application instance is not allowed' });
+    res.status(401).json({ error: error.message });
   }
 };
 
@@ -452,7 +432,6 @@ exports.forgotPassword = async (req, res) => {
         if (err) return res.status(400).json({ error: err.message });
 
         userSession.token = token;
-        console.log({ USER_SESSION: userSession.token });
         await userSession.save();
 
         const link = `${process.env.FRONTEND_URL}/forgot-password-verification?token=${token}`;
