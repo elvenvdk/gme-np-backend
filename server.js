@@ -11,7 +11,7 @@ require('dotenv').config({ path: './.env' });
 const app = express();
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: [process.env.FRONTEND_URL, process.env.GE_NP_S_FRONTEND],
   optionsSuccessStatus: 200,
 };
 

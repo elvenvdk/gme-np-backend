@@ -36,6 +36,16 @@ exports.register = async (req, res) => {
     org,
     orgName,
   } = req.body;
+  console.log({
+    firstName,
+    lastName,
+    userName,
+    email,
+    password,
+    role,
+    org,
+    orgName,
+  });
   if (email === '' || password === '')
     return res.status(400).json({ error: 'Email and password are required' });
 
@@ -54,82 +64,11 @@ exports.register = async (req, res) => {
         .status('400')
         .json({ error: 'An organization ownder already exists' });
 
-    // If not owner search for org name and register with that orgid -------------------------------
-    if (role !== userRoles.OWNER) {
-      let userOrg = await Org.findOne({ name: orgName });
-      if (!userOrg)
-        return res
-          .status(400)
-          .json({ error: 'This organization does not exist' });
-
-      // Hash and salt user password
-      const hashedPassword = await hashPassword(password);
-
-      // Add new user
-      user = new User({
-        firstName,
-        lastName,
-        userName,
-        email,
-        role,
-        org: userOrg._id,
-      });
-
-      await user.save();
-
-      // Add user password to user session
-      const userSession = await new Session({
-        user: user._id,
-        password: hashedPassword,
-      });
-
-      await userSession.save();
-
-      // Create email verification token
-      const payload = {
-        id: user._id,
-        role,
-        org,
-        tokenType: tokenTypes.REGISTRATION_VERIFICATION,
-      };
-
-      jwt.sign(
-        payload,
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' },
-        async (err, token) => {
-          if (err) return res.status(400).json({ error: err.message });
-          userSession.token = token;
-          await userSession.save();
-
-          const link = `${process.env.FRONTEND_URL}/auth/registration-email-verification/${token}`;
-          const sellerLink = `${process.env.GE_NP_S_FRONTEND}/auth/registration-email-verification/${token}`;
-
-          // Send user confirmation/verification email with token link
-          sendMail({
-            from: 'contact@grandmaemmas.com',
-            to: email,
-            subject: "No-Reply - Grandma Emma's Fund-Raising Registration",
-            text: "Grandma Emma's Fund-Raising Program Registration",
-            html: `<p>Hi ${firstName}</p>
-             <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
-             <p>Please click the link below to verify your email.</p>
-             <br></br>
-             <p>${link}</p>
-             <br></br>
-             <p>Thank you and Welcome,</p>
-             <p>Grandma Emmas Team`,
-          });
-        },
-      );
-
-      res.send({
-        msg:
-          "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
-      });
-    }
-
-    // If user is owner ------------------------------
+    let userOrg = await Org.findOne({ name: orgName });
+    if (!userOrg)
+      return res
+        .status(400)
+        .json({ error: 'This organization does not exist' });
 
     // Hash and salt user password
     const hashedPassword = await hashPassword(password);
@@ -138,9 +77,10 @@ exports.register = async (req, res) => {
     user = new User({
       firstName,
       lastName,
+      userName,
       email,
       role,
-      org,
+      org: userOrg._id,
     });
 
     await user.save();
@@ -158,6 +98,111 @@ exports.register = async (req, res) => {
       id: user._id,
       role,
       org,
+      tokenType: tokenTypes.REGISTRATION_VERIFICATION,
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+      async (err, token) => {
+        if (err) return res.status(400).json({ error: err.message });
+        userSession.token = token;
+        await userSession.save();
+
+        const link = `${process.env.FRONTEND_URL}/auth/registration-email-verification/${token}`;
+        const sellerLink = `${process.env.GE_NP_S_FRONTEND}/registration-email-verification/${token}`;
+
+        // Send user confirmation/verification email with token link
+        sendMail({
+          from: 'contact@grandmaemmas.com',
+          to: email,
+          subject: "No-Reply - Grandma Emma's Fund-Raising Registration",
+          text: "Grandma Emma's Fund-Raising Program Registration",
+          html: `<p>Hi ${firstName}</p>
+             <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
+             <p>Please click the link below to verify your email.</p>
+             <br></br>
+             <p>${role === 'seller' ? sellerLink : link}</p>
+             <br></br>
+             <p>Thank you and Welcome,</p>
+             <p>Grandma Emmas Team`,
+        });
+      },
+    );
+
+    res.send({
+      msg:
+        "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
+    });
+  } catch (error) {
+    res.status(400).json({ error: 'There was a problem adding this user.' });
+  }
+};
+
+/**
+ * @function registerOwner
+ * @description Registers new organization owner.  Sends user email apon successful registration
+ * @param {*} req firstName, lastName, email, password, role, org
+ * @param {*} res confirmation msg
+ */
+
+exports.registerOwner = async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    userName,
+    email,
+    password,
+    role,
+    orgName,
+  } = req.body;
+  console.log({
+    firstName,
+    lastName,
+    userName,
+    email,
+    password,
+    role,
+    orgName,
+  });
+  if (email === '' || password === '')
+    return res.status(400).json({ error: 'Email and password are required' });
+
+  if (!validateEmail(email))
+    return res
+      .status(400)
+      .json({ error: 'Please enter a valid email address...' });
+  try {
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ error: 'User already registered' });
+
+    // Hash and salt user password
+    const hashedPassword = await hashPassword(password);
+
+    // Add new user
+    user = new User({
+      firstName,
+      lastName,
+      email,
+      role,
+    });
+
+    await user.save();
+
+    // Add user password to user session
+    const userSession = await new Session({
+      user: user._id,
+      password: hashedPassword,
+    });
+
+    await userSession.save();
+
+    // Create email verification token
+    const payload = {
+      id: user._id,
+      role,
       tokenType: tokenTypes.REGISTRATION_VERIFICATION,
     };
 
@@ -195,7 +240,7 @@ exports.register = async (req, res) => {
         "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: 'There was a problem adding this user.' });
   }
 };
 
@@ -309,24 +354,7 @@ exports.emailVerificationCheck = async (req, res) => {
       org: decoded.org,
       tokenType: tokenTypes.SESSION,
     };
-
-    // jwt.sign(
-    //   payload,
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: '2h' },
-    //   async (err, token) => {
-    //     if (err) return res.status(400).json({ error: err.message });
-    //     userSession.token = token;
-    //     await userSession.save();
-    //     res.send({
-    //       msg: 'Your email has been successfully verified.',
-    //       token,
-    //       id: decoded.id,
-    //       role: decoded.role,
-    //       org: decoded.org,
-    //     });
-    //   },
-    // );
+    console.log(payload);
 
     const newToken = await jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1h',
@@ -345,6 +373,43 @@ exports.emailVerificationCheck = async (req, res) => {
     res
       .status(401)
       .json({ error: 'There was a problem verifying this email.' });
+  }
+};
+
+/**
+ * @function sellerInstanceVerificationCheck
+ * @description Gets token from email verification to check if user has verified email
+ * @param {*} query token
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
+
+exports.sellerInstanceVerificationCheck = async (req, res) => {
+  const { userName } = req.params;
+  if (!userName)
+    return res.status(400).json({ error: 'Username not provided' });
+  try {
+    let user = await User.findOne({ userName });
+    if (!user) return res.status(400).json({ error: 'Sales origin not found' });
+    let org = await Org.findOne({ _id: user.org });
+    if (!org)
+      return res
+        .status(400)
+        .json({ error: 'Fundrasing organization not found' });
+    let session = await Session.findOne({ user: user._id });
+    if (!session) res.status(400).json({ error: 'Session not found' });
+    let decoded = jwt.verify(session.token, process.env.JWT_SECRET);
+    if (!decoded)
+      return res.status(401).json({ error: 'This session has expired' });
+    res.send({
+      msg: 'App session successfully verified.',
+      org: org._id,
+      orgName: org.name,
+      id: user._id,
+      role: user.role,
+    });
+  } catch (error) {
+    res.status(401).json({ error: 'This application instance is not allowed' });
   }
 };
 

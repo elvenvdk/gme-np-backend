@@ -5,6 +5,7 @@ const {
   emailVerificationCheck,
   forgotPassword,
   forgotPasswordVerification,
+  registerOwner,
 } = require('../controllers/auth');
 
 const router = express.Router();
@@ -16,6 +17,14 @@ const router = express.Router();
  */
 
 router.post('/register', register);
+
+/**
+ * @route api/auth/owner-registration
+ * @description registration route for owners
+ * @access public
+ */
+
+router.post('/owner-registration', registerOwner);
 
 /**
  * @route api/auth/login
