@@ -321,6 +321,9 @@ exports.emailVerificationCheck = async (req, res) => {
         .status(401)
         .json({ error: 'There was a problem verifying this email.' });
 
+    const user = await User.findOne({ _id: userSession.user });
+    if (!user) return res.status(401).json({ error: 'User not found.' });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded)
@@ -336,7 +339,7 @@ exports.emailVerificationCheck = async (req, res) => {
     };
 
     const newToken = await jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+      expiresIn: user.role === userRoles.SELLER ? '1w' : '2h',
     });
 
     userSession.token = newToken;
@@ -345,6 +348,8 @@ exports.emailVerificationCheck = async (req, res) => {
       msg: 'Your email has been successfully verified.',
       token,
       id: decoded.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: decoded.role,
       org: decoded.org,
     });
@@ -385,6 +390,8 @@ exports.sellerInstanceVerificationCheck = async (req, res) => {
       org: org._id,
       orgName: org.name,
       id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       role: user.role,
       token: session.token,
     });
