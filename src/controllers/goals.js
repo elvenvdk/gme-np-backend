@@ -12,6 +12,7 @@ const SALES_URL = process.env.GE_S_API;
  */
 
 exports.createMainGoal = async (req, res) => {
+  const { orgId } = req.query;
   const { amount } = req.body;
   console.log({ orgId }, amount);
 
