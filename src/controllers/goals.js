@@ -14,7 +14,6 @@ const SALES_URL = process.env.GE_S_API;
 exports.createMainGoal = async (req, res) => {
   const { orgId } = req.query;
   const { amount } = req.body;
-  console.log({ orgId }, amount);
 
   try {
     const d = moment().format();
@@ -43,12 +42,11 @@ exports.createMainGoal = async (req, res) => {
 exports.updateMainGoal = async (req, res) => {
   const { orgId, goalId } = req.query;
   const { amount } = req.body;
-  console.log({ orgId }, amount);
 
   try {
     const d = moment().format();
 
-    let goal = await Goal.findOne({ _id: goalId });
+    let goal = await Goal.findOne({ org: orgId, _id: goalId });
     if (!goal)
       return res
         .status(400)
@@ -131,10 +129,8 @@ exports.getMainGoalDiff = async (req, res) => {
   const { type } = req.body;
   try {
     const sales = await axios.get(`${SALES_URL}/sales/sales-per-day`, type);
-    console.log({ sales: sales.data });
     res.send(sales.data);
   } catch (error) {
-    console.log({ error });
     res.status(400).json({ error: error.message });
   }
 };
