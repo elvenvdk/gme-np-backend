@@ -12,7 +12,6 @@ const Session = require('../models/session');
 
 exports.tokenVerify = async (req, res, next) => {
   const token = req.header('x-auth-token');
-  console.log({ token });
   // Check if token exists
   if (!token)
     return res
@@ -21,7 +20,6 @@ exports.tokenVerify = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log({ decoded });
     const userId = decoded.id;
 
     if (!userId)

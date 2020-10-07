@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Session = require('../models/session');
 const Org = require('../models/org');
+const Goal = require('../models/goals');
+
 const { tokenTypes, hashPassword, userRoles } = require('./helpers');
 const { sendMail } = require('../controllers/emailSvc');
 const db = require('../db');
@@ -256,6 +258,13 @@ exports.login = async (req, res) => {
           'You are not associated with any organization yet.  Please see the an admin personnel or the organization owner.',
       });
 
+    const goal = await Goal.findOne({ org: org._id });
+    console.log({ goalOrg: goal.org });
+    if (!goal)
+      console.log({
+        msg: 'No goal found... Moving to construct token payload.',
+      });
+
     // res.send(user.id);
     const payload = {
       id: user.id,
@@ -281,22 +290,25 @@ exports.login = async (req, res) => {
             role: user.role,
             orgName: org.name,
             orgId: org.id,
+            goalId: goal.id,
           });
         },
       );
     }
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: '1w' },
-      async (err, token) => {
-        if (err) throw err;
-        session.token = token;
-        await session.save();
-        res.send({ msg: 'Sales person successfully logged in' });
-      },
-    );
+    if (user.role === userRoles.SELLER) {
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '1w' },
+        async (err, token) => {
+          if (err) throw err;
+          session.token = token;
+          await session.save();
+          res.send({ msg: 'Sales person successfully logged in' });
+        },
+      );
+    }
   } catch (error) {
     res.status(400).json({ error: error.stack });
   }
