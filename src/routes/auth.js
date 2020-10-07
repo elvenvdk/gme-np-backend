@@ -7,6 +7,9 @@ const {
   forgotPasswordVerification,
   registerOwner,
   sellerInstanceVerificationCheck,
+  logout,
+  lockoutComplete,
+  userLogout,
 } = require('../controllers/auth');
 
 const router = express.Router();
@@ -34,6 +37,30 @@ router.post('/owner-registration', registerOwner);
  */
 
 router.post('/login', login);
+
+/**
+ * @route api/auth/logout
+ * @description Log current user out
+ * @access private
+ */
+
+router.post('/logout', logout);
+
+/**
+ * @route api/auth/userLogout
+ * @description Log user out
+ * @access private
+ */
+
+router.post('/userLogout', userLogout);
+
+/**
+ * @route api/auth/lockout
+ * @description Lock user out
+ * @access private
+ */
+
+router.post('/lockout', lockoutComplete);
 
 /**
  * @route api/auth/email-verification
