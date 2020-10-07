@@ -64,14 +64,6 @@ exports.updateMainGoal = async (req, res) => {
 };
 
 /**
- * @function createDayGoal
- * @description Creates/updates organization goalPerDay amount in database
- * @param {*} query goalId
- * @param {*} req amount, ordId
- * @param {*} res confirmation msg
- */
-
-/**
  * @function getMainGoal
  * @description Gets organization mainGoal amount
  * @param {*} query orgId
