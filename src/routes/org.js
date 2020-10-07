@@ -1,10 +1,11 @@
 const express = require('express');
 const { addOrg, updateOrg, getOrgs } = require('../controllers/org');
 const router = express.Router();
+const { tokenVerify } = require('../middleWare/auth');
 
-router.post('/add', addOrg);
+router.post('/add', tokenVerify, addOrg);
 
-router.put('/update', updateOrg);
+router.put('/update', tokenVerify, updateOrg);
 
 router.get('/', getOrgs);
 module.exports = router;

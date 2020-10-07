@@ -1,5 +1,7 @@
 const express = require('express');
 
+const { tokenVerify } = require('../middleWare/auth');
+
 const {
   createMainGoal,
   createDayGoal,
@@ -17,7 +19,7 @@ const router = express.Router();
  * @description route for creating main goal
  */
 
-router.post('/create/main-goal', createMainGoal);
+router.post('/create/main-goal', tokenVerify, createMainGoal);
 
 /**
  * @route put api/goals/update/main-goal
@@ -25,7 +27,7 @@ router.post('/create/main-goal', createMainGoal);
  * @description route for creating main goal
  */
 
-router.put('/update/main-goal', updateMainGoal);
+router.put('/update/main-goal', tokenVerify, updateMainGoal);
 
 /**
  * @route post api/goals/create/day-goal
@@ -39,7 +41,7 @@ router.put('/update/main-goal', updateMainGoal);
  * @description route getting main goal amount
  */
 
-router.get('/main', getMainGoal);
+router.get('/main', tokenVerify, getMainGoal);
 
 /**
  * @route get api/goals/day-goal
@@ -47,7 +49,7 @@ router.get('/main', getMainGoal);
  * @description route getting goal-per-day amount
  */
 
-router.get('/day', getGoalPerDay);
+router.get('/day', tokenVerify, getGoalPerDay);
 
 /**
  * @route get api/goals/main-goal-diff
@@ -55,6 +57,6 @@ router.get('/day', getGoalPerDay);
  * @description route getting difference of main goal and sales (day)
  */
 
-router.get('/main-goal-diff', getMainGoalDiff);
+router.get('/main-goal-diff', tokenVerify, getMainGoalDiff);
 
 module.exports = router;

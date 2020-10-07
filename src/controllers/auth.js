@@ -276,7 +276,7 @@ exports.login = async (req, res) => {
           await session.save();
           return res.send({
             msg: 'Admin user successfully logged in',
-            token,
+            token: session.token,
             id: user.id,
             role: user.role,
             orgName: org.name,
@@ -609,35 +609,5 @@ exports.forgotPasswordVerification = async (req, res) => {
     res
       .status(401)
       .json({ error: 'There was a problem verifying this email.' });
-  }
-};
-
-/**
- * @function tokenVerify
- * @description Verifies token from frontend and compares to session token in db
- * @param {*} query token
- * @param {*} req header
- */
-
-exports.tokenVerify = (req, res, next) => {
-  // Get token from header
-  const token = req.header('x-auth-token');
-
-  // Check if token exists
-  if (!token)
-    return res.status(401).json({ error: 'No token, authorization denied' });
-
-  // Verify token
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    res.locals.ID = decoded.id;
-    res.locals.ROLE = decoded.role;
-    res.locals.ORG = decoded.org;
-    next();
-  } catch (err) {
-    res
-      .status(401)
-      .json({ error: 'Token is not valid', error_msg: err.message });
   }
 };
