@@ -227,8 +227,8 @@ exports.registerOwner = async (req, res) => {
 
 /**
  * @function login
- * @description Gets organization goalPerDay amount
- * @param {*} query orgId
+ * @description Logs user in
+ * @param {*} query email password
  * @param {*} req
  * @param {*} res confirmation msg
  */
@@ -299,6 +299,94 @@ exports.login = async (req, res) => {
     );
   } catch (error) {
     res.status(400).json({ error: error.stack });
+  }
+};
+
+/**
+ * @function logout
+ * @description Logs user out
+ * @param {*} query userId
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
+
+exports.logout = async (req, res) => {
+  const { userId } = req.query;
+  try {
+    const user = await User.findOne({ _id: userId });
+    if (!user)
+      return res
+        .status(400)
+        .json({ error: 'There was a problem logging this user out' });
+    const session = await Session.findOne({ user: user._id });
+    if (!session)
+      return res.status(400).json({ error: 'User session not found' });
+    session.token = '';
+    await session.save();
+    res.send({ msg: 'User session successfully ended' });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: 'There was an error with logging this user out' });
+  }
+};
+
+/**
+ * @function logout
+ * @description Logs user out
+ * @param {*} query userId
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
+
+exports.userLogout = async (req, res) => {
+  const { eamil } = req.query;
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(400)
+        .json({ error: 'There was a problem logging this user out' });
+    const session = await Session.findOne({ user: user._id });
+    if (!session)
+      return res.status(400).json({ error: 'User session not found' });
+    session.token = '';
+    await session.save();
+    res.send({ msg: `${user.name}'s session has successfully ended` });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: 'There was an error with logging this user out' });
+  }
+};
+
+/**
+ * @function logout
+ * @description Logs user out
+ * @param {*} query userId
+ * @param {*} req
+ * @param {*} res confirmation msg
+ */
+
+exports.lockoutComplete = async (req, res) => {
+  const { email } = req.query;
+  try {
+    const user = await User.findOne({ email });
+    if (!user)
+      return res
+        .status(400)
+        .json({ error: 'There was a problem locking this user out' });
+    const session = await Session.findOne({ user: user._id });
+    if (!session)
+      return res.status(400).json({ error: 'User session not found' });
+    session.token = '';
+    session.password = '';
+    await session.save();
+    res.send({ msg: 'User session complete lockout - successfull' });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ error: 'There was an error with logging this user out' });
   }
 };
 
