@@ -1,5 +1,13 @@
 const express = require('express');
-const { register, login } = require('../controllers/auth');
+const {
+  register,
+  login,
+  emailVerificationCheck,
+  forgotPassword,
+  forgotPasswordVerification,
+  registerOwner,
+  sellerInstanceVerificationCheck,
+} = require('../controllers/auth');
 
 const router = express.Router();
 
@@ -11,6 +19,55 @@ const router = express.Router();
 
 router.post('/register', register);
 
+/**
+ * @route api/auth/owner-registration
+ * @description registration route for owners
+ * @access public
+ */
+
+router.post('/owner-registration', registerOwner);
+
+/**
+ * @route api/auth/login
+ * @description Login in for all users
+ * @access public
+ */
+
 router.post('/login', login);
+
+/**
+ * @route api/auth/email-verification
+ * @description Route for verififying user email upon after registration
+ * @access private
+ */
+
+router.post('/email-verification', emailVerificationCheck);
+
+/**
+ * @route api/auth/seller-instance-verification
+ * @description Route for verififying user email upon after registration
+ * @access private
+ */
+
+router.post(
+  '/seller-instance-verification/:userName',
+  sellerInstanceVerificationCheck,
+);
+
+/**
+ * @route api/auth/forgot-password
+ * @description Route for sending forgot-password verification and token setting for user
+ * @access public
+ */
+
+router.post('/forgot-password', forgotPassword);
+
+/**
+ * @route api/auth/forgot-password-verification
+ * @description Route for verifying user email for forgot-password
+ * @access private
+ */
+
+router.post('/forgot-password-verification', forgotPasswordVerification);
 
 module.exports = router;

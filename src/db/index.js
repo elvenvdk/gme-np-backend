@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-const NON_PROFIT_DB = process.env.NON_PROFIT_DB;
+const NON_PROFIT_DB = process.env.MLAB_URI;
 
 exports.connectdb = async () => {
   try {
-    const db = await mongoose.connect(NON_PROFIT_DB, {
+    await mongoose.connect(NON_PROFIT_DB, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
