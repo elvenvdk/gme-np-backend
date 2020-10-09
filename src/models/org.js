@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Schema;
 
 const OrgSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       trim: true,
+      unique: true,
+    },
+    owner: {
+      type: ObjectId,
+      ref: 'User',
     },
     addressLine1: {
       type: String,
@@ -28,6 +34,9 @@ const OrgSchema = new mongoose.Schema(
     photo: {
       data: Buffer,
       contentType: String,
+    },
+    active: {
+      type: Boolean,
     },
     dateAdded: {
       type: Date,

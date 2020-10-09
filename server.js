@@ -6,12 +6,13 @@ const { connectdb } = require('./src/db');
 const authRoute = require('./src/routes/auth');
 const goalsRoute = require('./src/routes/goals');
 const orgRoute = require('./src/routes/org');
+const salesRoute = require('./src/routes/sales');
 require('dotenv').config({ path: './.env' });
 
 const app = express();
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: [process.env.FRONTEND_URL, process.env.GE_NP_S_FRONTEND],
   optionsSuccessStatus: 200,
 };
 
@@ -28,6 +29,7 @@ app.use(cors(corsOptions));
 app.use('/api/auth', authRoute);
 app.use('/api/goals', goalsRoute);
 app.use('/api/org', orgRoute);
+app.use('/api/sales', salesRoute);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

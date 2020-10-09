@@ -5,7 +5,6 @@ const UserSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
-
       true: true,
     },
     lastName: {
@@ -15,16 +14,12 @@ const UserSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-
       trim: true,
     },
     userName: {
       type: String,
-
       trim: true,
-    },
-    password: {
-      type: String,
+      unique: true,
     },
     role: {
       type: String,

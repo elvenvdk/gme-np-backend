@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
 
-const SessionSchema = new mongoose.Schema(
+const OrgSessionSchema = new mongoose.Schema(
   {
-    user: {
+    org: {
       type: ObjectId,
-      ref: 'User',
+      ref: 'Org',
       unique: true,
     },
-    password: {
-      type: String,
-      trim: true,
+    owner: {
+      type: ObjectId,
+      ref: 'User',
     },
     token: {
       type: String,
@@ -23,4 +23,4 @@ const SessionSchema = new mongoose.Schema(
   { timestamp: true },
 );
 
-module.exports = mongoose.model('Session', SessionSchema);
+module.exports = mongoose.model('OrgSession', OrgSessionSchema);
