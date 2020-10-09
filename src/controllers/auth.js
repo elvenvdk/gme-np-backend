@@ -170,6 +170,7 @@ exports.registerOwner = async (req, res) => {
       lastName,
       email,
       role,
+      userName: ''
     });
 
     await user.save();
@@ -223,7 +224,7 @@ exports.registerOwner = async (req, res) => {
         "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
     });
   } catch (error) {
-    res.status(400).json({ error: 'There was a problem adding this user.' });
+    res.status(400).json({ error: 'There was a problem adding this user.'  });
   }
 };
 
@@ -259,7 +260,6 @@ exports.login = async (req, res) => {
       });
 
     const goal = await Goal.findOne({ org: org._id });
-    console.log({ goalOrg: goal.org });
     if (!goal)
       console.log({
         msg: 'No goal found... Moving to construct token payload.',
@@ -290,7 +290,7 @@ exports.login = async (req, res) => {
             role: user.role,
             orgName: org.name,
             orgId: org.id,
-            goalId: goal.id,
+            goalId: goal && goal.id,
           });
         },
       );

@@ -57,6 +57,6 @@ router.get('/day', tokenVerify, getGoalPerDay);
  * @description route getting difference of main goal and sales (day)
  */
 
-router.get('/main-goal-diff', tokenVerify, getMainGoalDiff);
+router.get('/main-goal-diff' , tokenVerify, getMainGoalDiff);
 
 module.exports = router;
