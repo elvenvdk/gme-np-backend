@@ -278,7 +278,7 @@ exports.login = async (req, res) => {
       jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: '1h' },
+        { expiresIn: '8h' },
         async (err, token) => {
           if (err) throw err;
           session.token = token;
