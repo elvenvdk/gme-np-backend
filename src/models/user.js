@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
+const { v4: uuidv4, v4 } = require('uuid');
+
 
 const UserSchema = new mongoose.Schema(
   {
@@ -20,6 +22,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
       unique: true,
+      default: v4(),
     },
     role: {
       type: String,

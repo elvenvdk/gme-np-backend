@@ -106,20 +106,26 @@ exports.register = async (req, res) => {
         const sellerLink = `${process.env.GE_NP_S_FRONTEND}/registration-email-verification/${token}`;
 
         // Send user confirmation/verification email with token link
-        sendMail({
-          from: 'contact@grandmaemmas.com',
-          to: email,
-          subject: "No-Reply - Grandma Emma's Fund-Raising Registration",
-          text: "Grandma Emma's Fund-Raising Program Registration",
-          html: `<p>Hi ${firstName}</p>
-             <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
-             <p>Please click the link below to verify your email.</p>
-             <br></br>
-             <p>${role === 'seller' ? sellerLink : link}</p>
-             <br></br>
-             <p>Thank you and Welcome,</p>
-             <p>Grandma Emmas Team`,
-        });
+        try {
+          await sendMail({
+            from: 'contact@grandmaemmas.com',
+            to: email,
+            subject: "No-Reply - Grandma Emma's Fund-Raising Registration",
+            text: "Grandma Emma's Fund-Raising Program Registration",
+            html: `<p>Hi ${firstName}</p>
+               <p>This is a confirmation email from your registration to Grandma Emma's Fund-Raising Program</p>
+               <p>Please click the link below to verify your email.</p>
+               <br></br>
+               <p>${role === 'seller' ? sellerLink : link}</p>
+               <br></br>
+               <p>Thank you and Welcome,</p>
+               <p>Grandma Emmas Team`,
+          });
+        }
+        catch(error) {
+          throw error;
+        }
+        
       },
     );
 
@@ -170,7 +176,6 @@ exports.registerOwner = async (req, res) => {
       lastName,
       email,
       role,
-      userName: ''
     });
 
     await user.save();
@@ -224,7 +229,7 @@ exports.registerOwner = async (req, res) => {
         "Registration successfull.  We've emailed you a confirmation.  If it's not in your inbox it might be in your spam folder.",
     });
   } catch (error) {
-    res.status(400).json({ error: 'There was a problem adding this user.'  });
+    res.status(400).json({ error  });
   }
 };
 
